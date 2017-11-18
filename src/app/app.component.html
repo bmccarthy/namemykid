@@ -1,63 +1,52 @@
 <nav class="navbar navbar-default">
-    <div class="container-fluid">
-      <div class="navbar-header">
-        <a class="navbar-brand" href="#">
-          Pick My Kids Name
-        </a>
-      </div>
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="#">
+        Pick My Kid's Name
+      </a>
     </div>
-  </nav>
+  </div>
+</nav>
 
 <div class="container">
 
-  <ul class="list-group">
-    <li class="list-group-item">
-        <span class="badge">14</span>
-        <span class="badge">-</span>
-        <span class="badge">+</span>
-        Gert
-    </li>
-    <li class="list-group-item">
-        <span class="badge">100</span>
-        <span class="badge">-</span>
-        <span class="badge">+</span>
-        Peanut
-    </li>
-  </ul>
+  <div class="row">
+    <div class="col-md-6 col-md-offset-3">
 
+      <ul class="list-group numbered-list">
+        <li class="list-group-item" *ngFor="let item of names; let i = index">
+          <span class="badge">{{item.votes}}</span>
+          <span class="badge badge-error" style="cursor:pointer;" (click)="downVote(item)">-</span>
+          <span class="badge badge-success" style="cursor:pointer;" (click)="upVote(item)">+</span>
+          <span class="list-item-number">{{(i + 1) + (currentPageNumber * 10)}}</span>{{item.name}}
+        </li>
+      </ul>
 
-  <nav aria-label="Page navigation">
-    <ul class="pagination">
-      <li>
-        <a href="#" aria-label="Previous">
-          <span aria-hidden="true">&laquo;</span>
-        </a>
-      </li>
-      <li>
-        <a href="#">1</a>
-      </li>
-      <li>
-        <a href="#">2</a>
-      </li>
-      <li>
-        <a href="#">3</a>
-      </li>
-      <li>
-        <a href="#">4</a>
-      </li>
-      <li>
-        <a href="#">5</a>
-      </li>
-      <li>
-        <a href="#" aria-label="Next">
-          <span aria-hidden="true">&raquo;</span>
-        </a>
-      </li>
-    </ul>
-  </nav>
+      <nav aria-label="Page navigation">
+        <ul class="pagination">
+          <li [class.disabled]="currentPageNumber === 0">
+            <a href="#" aria-label="Previous" (click)="selectPage(currentPageNumber - 1)">
+              <span aria-hidden="true">&laquo;</span>
+            </a>
+          </li>
+          <li [class.disabled]="currentPageNumber === idx" *ngFor="let i of Arr(totalNumberOfPages).fill(1); let idx = index;">
+            <a href="#" (click)="selectPage(idx)">{{idx + 1}}</a>
+          </li>
+          <li [class.disabled]="currentPageNumber === (totalNumberOfPages -1)">
+            <a href="#" aria-label="Next" (click)="selectPage(currentPageNumber + 1)">
+              <span aria-hidden="true">&raquo;</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
 
-  <form>
-  <input type="text" class="form-control" />
-  <button type="submit" class="btn btn-primary">Submit</button>
-  </form>
-</button></div>
+      <form class="form-inline" [formGroup]="newItemForm" novalidate (ngSubmit)="submitNewName()">
+        <div class="form-group">
+          <label class="sr-only">Name</label>
+          <input type="text" formControlName="name" class="form-control" placeholder="New Name">
+        </div>
+        <button type="submit" class="btn btn-primary" [disabled]="!newItemForm.valid">Submit</button>
+      </form>
+    </div>
+  </div>
+</div>
