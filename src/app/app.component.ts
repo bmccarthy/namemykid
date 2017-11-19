@@ -1,5 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Http } from '@angular/http';
+
+import 'rxjs/add/operator/map';
+
+import { environment } from './../environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -14,7 +19,7 @@ export class AppComponent implements OnInit {
   currentPageNumber = 0;
   Arr = Array;
 
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder, private http: Http) {
     this.createForm();
   }
 
@@ -29,26 +34,12 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.allNames = [
-      { name: 'Peanut', votes: 100},
-      { name: 'Gert', votes: 2},
-      { name: 'Gert1', votes: 2},
-      { name: 'Gert2', votes: 2},
-      { name: 'Gert3', votes: 2},
-      { name: 'Gert4', votes: 2},
-      { name: 'Gert5', votes: 2},
-      { name: 'Gert6', votes: 2},
-      { name: 'Gert7', votes: 2},
-      { name: 'Gert8', votes: 2},
-      { name: 'Gert9', votes: 2},
-      { name: 'Gert10', votes: 2},
-      { name: 'Gert11', votes: 2},
-      { name: 'Gert12', votes: 2},
-      { name: 'Gert13', votes: 2},
-      { name: 'Charlotte', votes: 200},
-    ];
-
-    this.names = this.sortVotes(this.allNames);
+    this.http.get(environment.apiUrl + 'names')
+      .map(c => c.json())
+      .subscribe(names => {
+        this.allNames = names;
+        this.names = this.sortVotes(this.allNames);
+      });
   }
 
   sortVotes(votes: KidName[]) {
@@ -76,10 +67,22 @@ export class AppComponent implements OnInit {
 
   upVote(item: KidName) {
     item.votes += 1;
+
+    const url = `${environment.apiUrl}names/${item._id}/up-vote`;
+
+    this.http.put(url, {}).subscribe(c => {
+      console.log('upvoted ' + item.name);
+    });
   }
 
   downVote(item: KidName) {
     item.votes -= 1;
+
+    const url = `${environment.apiUrl}names/${item._id}/down-vote`;
+
+    this.http.put(url, {}).subscribe(c => {
+      console.log('downvoted ' + item.name);
+    });
   }
 
   submitNewName() {
@@ -89,17 +92,24 @@ export class AppComponent implements OnInit {
       return;
     }
 
-    const newVote = {name: this.newItemForm.value.name, votes: 1};
-    this.allNames = [...this.allNames, newVote];
+    const url = `${environment.apiUrl}names`;
 
-    this.names = this.sortVotes(this.allNames);
+    const newVote: KidName = { name: this.newItemForm.value.name, votes: 1 };
 
-    this.submitted = false;
-    this.newItemForm.setValue({name: '' });
+    this.http.post(url, newVote).map(c => c.json()).subscribe(c => {
+      newVote._id = c._id;
+      this.allNames = [...this.allNames, newVote];
+
+      this.names = this.sortVotes(this.allNames);
+
+      this.submitted = false;
+      this.newItemForm.setValue({ name: '' });
+    });
   }
 }
 
 export interface KidName {
+  _id?: string;
   votes: number;
   name: string;
 }
